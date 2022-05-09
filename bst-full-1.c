@@ -11,13 +11,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct node {
-	int key;
-	struct node *left;
-	struct node *right;
-} Node;
+typedef struct node {//node를 struct로 선언(지정)
+	int key; //정수형 변수 key 선언
+	struct node *left; //node에 대한 포인터 left 선언
+	struct node *right; //node에 대한 포인터 rignt 선언
+} Node; //구조체 별칭 Node
 
-int initializeBST(Node** h);
+int initializeBST(Node** h); //headNode에 메모리를 할당하여 초기화하는 함수 선언 (이중포인터를 매개변수로 함)
+//이중포인터를 매개변수로 할 경우 포인터 h의 값을 변경할 수 있음
+//싱글포인터를 매개변수로 할 경우 값을 변경할 수 없음.
+//해당 코드의 linitialize는 포인터의 값을 변경하기 위해 이중포인터를 매개변수로 받도록 구현함.
 
 /* functions that you have to implement */
 void inorderTraversal(Node* ptr);	  /* recursive inorder traversal */
@@ -34,10 +37,10 @@ int freeBST(Node* head); /* free all memories allocated to the tree */
 
 int main()
 {
-	char command;
+	char command; 
 	int key;
-	Node* head = NULL;
-	Node* ptr = NULL;	/* temp */
+	Node* head = NULL; //Node에 대한 포인터 head 선언 후 초기화
+	Node* ptr = NULL;	/* temp */ //Node에 대한 포인터 ptr 선언 후 초기화
 
 	do{
 		printf("\n\n");
@@ -54,11 +57,11 @@ int main()
 		printf("Command = ");
 		scanf(" %c", &command);
 
-		switch(command) {
-		case 'z': case 'Z':
-			initializeBST(&head);
+		switch(command) { //command 값에 따른 switch 조건문
+		case 'z': case 'Z': //z를 입력받았을 경우 (대소문자 모두 가능)
+			initializeBST(&head);  //head의 주소를 매개변수로 하는 initializeBST 함수를 호출하여 메모리 할당 
 			break;
-		case 'q': case 'Q':
+		case 'q': case 'Q': 
 			freeBST(head);
 			break;
 		case 'n': case 'N':
@@ -108,216 +111,3 @@ int main()
 
 	return 1;
 }
-
-int initializeBST(Node** h) {
-
-	/* if the tree is not empty, then remove all allocated nodes from the tree*/
-	if(*h != NULL)
-		freeBST(*h);
-
-	/* create a head node */
-	*h = (Node*)malloc(sizeof(Node));
-	(*h)->left = NULL;	/* root */
-	(*h)->right = *h;
-	(*h)->key = -9999;
-	return 1;
-}
-
-
-
-void inorderTraversal(Node* ptr)
-{
-	if(ptr) {
-		inorderTraversal(ptr->left);
-		printf(" [%d] ", ptr->key);
-		inorderTraversal(ptr->right);
-	}
-}
-
-void preorderTraversal(Node* ptr)
-{
-	if(ptr) {
-		printf(" [%d] ", ptr->key);
-		preorderTraversal(ptr->left);
-		preorderTraversal(ptr->right);
-	}
-}
-
-void postorderTraversal(Node* ptr)
-{
-	if(ptr) {
-		postorderTraversal(ptr->left);
-		postorderTraversal(ptr->right);
-		printf(" [%d] ", ptr->key);
-	}
-}
-
-
-int insert(Node* head, int key)
-{
-	Node* newNode = (Node*)malloc(sizeof(Node));
-	newNode->key = key;
-	newNode->left = NULL;
-	newNode->right = NULL;
-
-	if (head->left == NULL) {
-		head->left = newNode;
-		return 1;
-	}
-
-	/* head->left is the root */
-	Node* ptr = head->left;
-
-	Node* parentNode = NULL;
-	while(ptr != NULL) {
-
-		/* if there is a node for the key, then just return */
-		if(ptr->key == key) return 1;
-
-		/* we have to move onto children nodes,
-		 * keep tracking the parent using parentNode */
-		parentNode = ptr;
-
-		/* key comparison, if current node's key is greater than input key
-		 * then the new node has to be inserted into the right subtree;
-		 * otherwise the left subtree.
-		 */
-		if(ptr->key < key)
-			ptr = ptr->right;
-		else
-			ptr = ptr->left;
-	}
-
-	/* linking the new node to the parent */
-	if(parentNode->key > key)
-		parentNode->left = newNode;
-	else
-		parentNode->right = newNode;
-	return 1;
-}
-
-int deleteLeafNode(Node* head, int key)
-{
-	if (head == NULL) {
-		printf("\n Nothing to delete!!\n");
-		return -1;
-	}
-
-	if (head->left == NULL) {
-		printf("\n Nothing to delete!!\n");
-		return -1;
-	}
-
-	/* head->left is the root */
-	Node* ptr = head->left;
-
-
-	/* we have to move onto children nodes,
-	 * keep tracking the parent using parentNode */
-	Node* parentNode = head;
-
-	while(ptr != NULL) {
-
-		if(ptr->key == key) {
-			if(ptr->left == NULL && ptr->right == NULL) {
-
-				/* root node case */
-				if(parentNode == head)
-					head->left = NULL;
-
-				/* left node case or right case*/
-				if(parentNode->left == ptr)
-					parentNode->left = NULL;
-				else
-					parentNode->right = NULL;
-
-				free(ptr);
-			}
-			else {
-				printf("the node [%d] is not a leaf \n", ptr->key);
-			}
-			return 1;
-		}
-
-		/* keep the parent node */
-		parentNode = ptr;
-
-		/* key comparison, if current node's key is greater than input key
-		 * then the new node has to be inserted into the right subtree;
-		 * otherwise the left subtree.
-		 */
-		if(ptr->key < key)
-			ptr = ptr->right;
-		else
-			ptr = ptr->left;
-
-
-	}
-
-	printf("Cannot find the node for key [%d]\n ", key);
-
-	return 1;
-}
-
-Node* searchRecursive(Node* ptr, int key)
-{
-	if(ptr == NULL)
-		return NULL;
-
-	if(ptr->key < key)
-		ptr = searchRecursive(ptr->right, key);
-	else if(ptr->key > key)
-		ptr = searchRecursive(ptr->left, key);
-
-	/* if ptr->key == key */
-	return ptr;
-
-}
-Node* searchIterative(Node* head, int key)
-{
-	/* root node */
-	Node* ptr = head->left;
-
-	while(ptr != NULL)
-	{
-		if(ptr->key == key)
-			return ptr;
-
-		if(ptr->key < key) ptr = ptr->right;
-		else
-			ptr = ptr->left;
-	}
-
-	return NULL;
-}
-
-void freeNode(Node* ptr)
-{
-	if(ptr) {
-		freeNode(ptr->left);
-		freeNode(ptr->right);
-		free(ptr);
-	}
-}
-
-int freeBST(Node* head)
-{
-
-	if(head->left == head)
-	{
-		free(head);
-		return 1;
-	}
-
-	Node* p = head->left;
-
-	freeNode(p);
-
-	free(head);
-	return 1;
-}
-
-
-
-
-
